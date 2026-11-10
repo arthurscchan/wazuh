@@ -46,3 +46,36 @@ set_target_properties(fuzz_xml PROPERTIES
     LINKER_LANGUAGE C
     RUNTIME_OUTPUT_DIRECTORY "${FUZZING_OUTPUT_DIR}"
     )
+
+add_executable(fuzz_version_op fuzz_version_op.c)
+
+target_include_directories(fuzz_version_op PRIVATE
+    ${SRC_FOLDER}
+    ${SRC_FOLDER}/shared
+    ${SRC_FOLDER}/shared/include
+    )
+
+add_dependencies(fuzz_version_op wazuh)
+target_link_libraries(fuzz_version_op PRIVATE
+    ${CMAKE_BINARY_DIR}/lib/libwazuh.a
+    ${SRC_FOLDER}/external/sqlite/libsqlite3.a
+    ${SRC_FOLDER}/external/cJSON/libcjson.a
+    ${SRC_FOLDER}/external/zlib/libz.a
+    ${SRC_FOLDER}/external/bzip2/libbz2.a
+    pthread
+    dl
+    rt
+    m
+    )
+
+if(DEFINED ENV{LIB_FUZZING_ENGINE} AND NOT "$ENV{LIB_FUZZING_ENGINE}" STREQUAL "")
+  target_link_options(fuzz_version_op PRIVATE "$ENV{LIB_FUZZING_ENGINE}")
+else()
+  target_compile_options(fuzz_version_op PRIVATE -fsanitize=fuzzer)
+  target_link_options(fuzz_version_op PRIVATE -fsanitize=fuzzer)
+endif()
+
+set_target_properties(fuzz_version_op PROPERTIES
+    LINKER_LANGUAGE C
+    RUNTIME_OUTPUT_DIRECTORY "${FUZZING_OUTPUT_DIR}"
+    )
